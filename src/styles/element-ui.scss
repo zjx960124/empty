@@ -43,7 +43,7 @@
   }
 }
 
-.el-select-dropdown {
+/*.el-select-dropdown {
   background: #001926;
   border-color: rgba(0, 0, 0, 0);
   .el-select-dropdown__item {
@@ -73,7 +73,7 @@
     .el-scrollbar__wrap {
     }
   }
-}
+}*/
 
 // to fix el-date-picker css style
 .el-range-separator {
@@ -499,4 +499,8 @@
   ::-webkit-scrollbar-corner{
     background:#f5f7fa;
   }
+}
+
+.el-input--suffix .el-input__inner {
+  padding-right: 14px;
 }

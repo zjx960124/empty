@@ -28,9 +28,11 @@ import PageTable from '@/components/PageTable'
 import JsTree from '@/components/JsTree'
 import Tinymce from '@/components/tinymce/index.vue'
 import pinyin from 'js-pinyin'
-
+import FormBuild from '@/views/draw/build/index';
 import formCreate from '@form-create/element-ui'
 import FcDesigner from '@form-create/designer'
+
+
 
 import {
   sameKeySetValue,
@@ -43,7 +45,6 @@ import {
 
 import fontSize from '@/utils/css'
 
-import FormBuild from './views/first/formBuilds';
 
 Vue.prototype.pinyin = pinyin
 Vue.prototype.globalData = globalVariable
@@ -81,8 +82,8 @@ Vue.use(VueClipboard)
 Vue.use(Print)
 Vue.use(formCreate)
 Vue.use(FcDesigner)
-Vue.use(FormBuild)
 Vue.use(scroll)
+Vue.use(FormBuild)
 
 Vue.component('PageForm', PageForm)
 Vue.component('PageTable', PageTable)

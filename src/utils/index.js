@@ -582,3 +582,5 @@ export function login() {
 export function logout() {
   window.location.href = process.env.VUE_APP_BASE_API + '/cas/logout?service=' + encodeURIComponent(window.location.href)
 }
+
+
