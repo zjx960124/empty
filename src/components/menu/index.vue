@@ -35,7 +35,9 @@
     },
     methods: {
       handleSelect(val) {
-        if (val === '2') this.$router.push('/home/index')
+        if (val === '2') this.$router.push('/home/projectManagement')
+        if (val === '3') this.$router.push('/home/tempManagement')
+        if (val === '4') this.$router.push('/home/componentGallery')
       }
     }
   }

@@ -1,26 +1,75 @@
 <template>
   <div class="draw-container">
     <div class="left">
-      <draggable
-        class="components-draggable"
-        :list="leftComponents"
-        :group="{ name: 'componentsGroup', pull: 'clone', put: false }"
-        :clone="cloneComponent"
-        draggable=".components-item"
-        :sort="false"
-        @end="onEnd"
-      >
-        <div
-          v-for="(element, index) in leftComponents"
-          :key="index"
-          class="components-item"
-          @click="addComponent(element)"
+      <div>
+        <div class="type-title">模板元件</div>
+        <draggable
+          class="components-draggable"
+          :list="leftComponents"
+          :group="{ name: 'componentsGroup', pull: 'clone', put: false }"
+          :clone="cloneComponent"
+          draggable=".components-item"
+          :sort="false"
+          @end="onEnd"
         >
-          <div class="components-body">
-            {{ element.label }}
+          <div
+            v-for="(element, index) in leftComponents"
+            :key="index"
+            class="components-item"
+            @click="addComponent(element)"
+          >
+            <div class="components-body">
+              {{ element.label }}
+            </div>
           </div>
-        </div>
-      </draggable>
+        </draggable>
+      </div>
+      <div>
+        <div class="type-title">模板组件</div>
+        <draggable
+          class="components-draggable"
+          :list="leftElement"
+          :group="{ name: 'componentsGroup', pull: 'clone', put: false }"
+          :clone="cloneComponent"
+          draggable=".components-item"
+          :sort="false"
+          @end="onEnd"
+        >
+          <div
+            v-for="(element, index) in leftElement"
+            :key="index"
+            class="components-item"
+            @click="addComponent(element)"
+          >
+            <div class="components-body">
+              {{ element.label }}
+            </div>
+          </div>
+        </draggable>
+      </div>
+      <div>
+        <div class="type-title">模板</div>
+        <draggable
+          class="components-draggable"
+          :list="templateComponents"
+          :group="{ name: 'componentsGroup', pull: 'clone', put: false }"
+          :clone="cloneComponent"
+          draggable=".components-item"
+          :sort="false"
+          @end="onEnd"
+        >
+          <div
+            v-for="(element, index) in templateComponents"
+            :key="index"
+            class="components-item"
+            @click="addComponent(element)"
+          >
+            <div class="components-body">
+              {{ element.label }}
+            </div>
+          </div>
+        </draggable>
+      </div>
     </div>
     <div class="center">
       <!--<div class="action-bar">
@@ -42,6 +91,7 @@
       <el-button type="danger" icon="el-icon-delete" size="small" @click="empty">清空</el-button>
       </div>-->
       <div class="operate-view">
+        <el-button type="primary" icon="el-icon-printer" size="small" @click="download">导出</el-button>
         <el-button type="primary" icon="el-icon-printer" size="small" @click="preview">预览</el-button>
         <el-button type="danger" icon="el-icon-delete" size="small" @click="empty">清空</el-button>
       </div>
@@ -91,17 +141,24 @@
 </template>
 
 <script>
-  import draggable from 'vuedraggable'
-  import { deepClone } from '../../utils/index'
+  import store from '../../store';
+  import draggable from 'vuedraggable';
+  import { deepClone, beautifierConf } from '../../utils/index';
+  import loadBeautifier from '@/utils/loadBeautifier'
   import DraggableItem from "./draggableItem";
   import AttrPanel from "./attrPanel";
-  import {titleCase} from '@/utils/index'
-  import Preview from './preview'
+  import {titleCase} from '@/utils/index';
+  import {
+    makeUpHtml, vueTemplate, vueScript, cssStyle
+  } from './generateCode/index'
+  import { makeUpJs } from './generateCode/utils'
+  import { makeUpCss } from './generateCode/style'
+  import { saveAs } from 'file-saver'
   let tempActiveData
+  let beautifier
   export default {
     name: "Draw",
     components: {
-      Preview,
       AttrPanel,
       DraggableItem,
       draggable
@@ -123,10 +180,7 @@
           },*/
           {
             layout: 'rowFrame',
-            tagIcon: 'row',
             label: '容器',
-            layoutTree: true,
-            document: 'https://element.eleme.cn/#/zh-CN/component/layout#row-attributes',
             style: {
               flexDirection: 'row',
               display: 'flex',
@@ -135,9 +189,6 @@
               backgroundColor: '#E1FFFF'
             },
             children: [],
-            type: 'default',
-            justify: 'start',
-            align: 'top'
           },
           {
             layout: 'elTabs',
@@ -206,6 +257,72 @@
             align: 'top'
           },
           {
+            layout: 'elForm',
+            tagIcon: 'el-form',
+            label: '子表单',
+            style: {
+              flexDirection: 'row',
+              display: 'flex',
+              padding: '10',
+              flex: 2,
+              backgroundColor: '#E1FFFF',
+              width: '100%',
+              height: '100%'
+            },
+            props: {
+            },
+            children: [
+              {
+                layout: 'elInput',
+                tagIcon: 'el-input',
+                label: '输入框',
+                style: {
+                  flexDirection: 'row',
+                  padding: '10',
+                  width: '100%',
+                  height: '100%'
+                },
+                props: {
+                  placeholder: '请输入名称',
+                  span: 12,
+                  value: '1'
+                },
+              }
+            ],
+          },
+          {
+            layout: 'elInput',
+            tagIcon: 'el-input',
+            label: '输入框',
+            style: {
+              flexDirection: 'row',
+              padding: '10',
+              width: '100%',
+              height: '100%'
+            },
+            props: {
+              placeholder: '请输入名称',
+              span: 12,
+              value: '1'
+            },
+          },
+          {
+            layout: 'elRadio',
+            tagIcon: 'el-radio',
+            label: '单选框',
+            style: {
+              flexDirection: 'row',
+              padding: '10',
+              width: '100%',
+              height: '100%'
+            },
+            props: {
+              placeholder: '请输入名称',
+              span: 12,
+              value: '1'
+            },
+          }
+          /*{
             layout: 'echart',
             label: '柱状图',
             type: 'bar',
@@ -238,7 +355,415 @@
               flex: 2,
               backgroundColor: '#E1FFFF'
             },
+          },*/
+        ],
+        leftElement: [
+          {
+            layout: 'clSub',
+            label: '分布折线图',
+            type: 'cChart',
+            data: {
+              category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+              legend: ['男生', '女生'],
+              value: [233, 233, 200, 180, 199, 233, 210, 180]
+            },
+            style: {
+              flexDirection: 'row',
+              display: 'flex',
+              padding: '10',
+              flex: 2,
+              backgroundColor: '#E1FFFF',
+              color: 'red'
+            },
+          },
+          {
+            layout: 'clDis',
+            label: '分布柱状图',
+            type: 'sub',
+            data: {
+              category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+              legend: ['男生', '女生'],
+              value: [233, 233, 200, 180, 199, 233, 210, 180]
+            },
+            style: {
+              flexDirection: 'row',
+              display: 'flex',
+              padding: '10',
+              flex: 2,
+              backgroundColor: '#E1FFFF',
+              color: 'red'
+            },
+            sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+            dataModel: '1',
+            category: 'businessName',
+            legend: 'depName',
+          },
+          {
+            layout: 'clPie',
+            label: '分布饼图',
+            type: 'cChart',
+            data: {
+              category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+              legend: ['男生', '女生'],
+              value: [233, 233, 200, 180, 199, 233, 210, 180]
+            },
+            style: {
+              flexDirection: 'row',
+              display: 'flex',
+              padding: '10',
+              flex: 2,
+              backgroundColor: '#E1FFFF',
+              color: 'red'
+            },
           }
+        ],
+        templateComponents: [
+          {
+            tempId: '1',
+            layout: 'rowFrame',
+            label: '师资力量',
+            style: {
+              flexDirection: 'row',
+              display: 'flex',
+              padding: '10',
+              flex: 2,
+              backgroundColor: '#E1FFFF'
+            },
+            children: [
+              {
+                layout: 'rowFrame',
+                label: '容器',
+                style: {
+                  flexDirection: 'column',
+                  display: 'flex',
+                  padding: '10',
+                  flex: 2,
+                  backgroundColor: '#E1FFFF'
+                },
+                children: [
+                  {
+                    layout: 'rowFrame',
+                    label: '容器',
+                    style: {
+                      flexDirection: 'row',
+                      display: 'flex',
+                      padding: '10',
+                      flex: 2,
+                      backgroundColor: '#E1FFFF'
+                    },
+                    children: [
+                      {
+                        layout: 'clDis',
+                        label: '分布柱状图',
+                        type: 'sub',
+                        data: {
+                          category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                          legend: ['男生', '女生'],
+                          value: [233, 233, 200, 180, 199, 233, 210, 180]
+                        },
+                        style: {
+                          flexDirection: 'row',
+                          display: 'flex',
+                          padding: '10',
+                          flex: 2,
+                          backgroundColor: '#E1FFFF',
+                          color: 'red'
+                        },
+                        sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+                        dataModel: '1',
+                        category: 'businessName',
+                        legend: 'depName',
+                      }
+                    ],
+                  },
+                  {
+                    layout: 'rowFrame',
+                    label: '容器',
+                    style: {
+                      flexDirection: 'row',
+                      display: 'flex',
+                      padding: '10',
+                      flex: 4,
+                      backgroundColor: '#E1FFFF'
+                    },
+                    children: [
+                      {
+                        layout: 'clDis',
+                        label: '分布柱状图',
+                        type: 'sub',
+                        data: {
+                          category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                          legend: ['男生', '女生'],
+                          value: [233, 233, 200, 180, 199, 233, 210, 180]
+                        },
+                        style: {
+                          flexDirection: 'row',
+                          display: 'flex',
+                          padding: '10',
+                          flex: 2,
+                          backgroundColor: '#E1FFFF',
+                          color: 'red'
+                        },
+                        sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+                        dataModel: '1',
+                        category: 'businessName',
+                        legend: 'depName',
+                      }
+                    ],
+                  },
+                  {
+                    layout: 'rowFrame',
+                    label: '容器',
+                    style: {
+                      flexDirection: 'row',
+                      display: 'flex',
+                      padding: '10',
+                      flex: 3,
+                      backgroundColor: '#E1FFFF'
+                    },
+                    children: [
+                      {
+                        layout: 'clDis',
+                        label: '分布柱状图',
+                        type: 'sub',
+                        data: {
+                          category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                          legend: ['男生', '女生'],
+                          value: [233, 233, 200, 180, 199, 233, 210, 180]
+                        },
+                        style: {
+                          flexDirection: 'row',
+                          display: 'flex',
+                          padding: '10',
+                          flex: 2,
+                          backgroundColor: '#E1FFFF',
+                          color: 'red'
+                        },
+                        sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+                        dataModel: '1',
+                        category: 'businessName',
+                        legend: 'depName',
+                      }
+                    ],
+                  },
+                ],
+              },
+              {
+                layout: 'rowFrame',
+                label: '容器',
+                style: {
+                  flexDirection: 'column',
+                  display: 'flex',
+                  padding: '10',
+                  flex: 4,
+                  backgroundColor: '#E1FFFF'
+                },
+                children: [
+                  {
+                    layout: 'rowFrame',
+                    label: '容器',
+                    style: {
+                      flexDirection: 'row',
+                      display: 'flex',
+                      padding: '10',
+                      flex: 6,
+                      backgroundColor: '#E1FFFF'
+                    },
+                    children: [
+                      {
+                        layout: 'clDis',
+                        label: '分布柱状图',
+                        type: 'sub',
+                        data: {
+                          category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                          legend: ['男生', '女生'],
+                          value: [233, 233, 200, 180, 199, 233, 210, 180]
+                        },
+                        style: {
+                          flexDirection: 'row',
+                          display: 'flex',
+                          padding: '10',
+                          flex: 2,
+                          backgroundColor: '#E1FFFF',
+                          color: 'red'
+                        },
+                        sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+                        dataModel: '1',
+                        category: 'businessName',
+                        legend: 'depName',
+                      }
+                    ],
+                  },
+                  {
+                    layout: 'rowFrame',
+                    label: '容器',
+                    style: {
+                      flexDirection: 'row',
+                      display: 'flex',
+                      padding: '10',
+                      flex: 3,
+                      backgroundColor: '#E1FFFF'
+                    },
+                    children: [
+                      {
+                        layout: 'clDis',
+                        label: '分布柱状图',
+                        type: 'sub',
+                        data: {
+                          category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                          legend: ['男生', '女生'],
+                          value: [233, 233, 200, 180, 199, 233, 210, 180]
+                        },
+                        style: {
+                          flexDirection: 'row',
+                          display: 'flex',
+                          padding: '10',
+                          flex: 2,
+                          backgroundColor: '#E1FFFF',
+                          color: 'red'
+                        },
+                        sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+                        dataModel: '1',
+                        category: 'businessName',
+                        legend: 'depName',
+                      }
+                    ],
+                  },
+                ],
+              },
+              {
+                layout: 'rowFrame',
+                label: '容器',
+                style: {
+                  flexDirection: 'column',
+                  display: 'flex',
+                  padding: '10',
+                  flex: 2,
+                  backgroundColor: '#E1FFFF'
+                },
+                children: [
+                  {
+                    layout: 'rowFrame',
+                    label: '容器',
+                    style: {
+                      flexDirection: 'row',
+                      display: 'flex',
+                      padding: '10',
+                      flex: 2,
+                      backgroundColor: '#E1FFFF'
+                    },
+                    children: [
+                      {
+                        layout: 'clDis',
+                        label: '分布柱状图',
+                        type: 'sub',
+                        data: {
+                          category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                          legend: ['男生', '女生'],
+                          value: [233, 233, 200, 180, 199, 233, 210, 180]
+                        },
+                        style: {
+                          flexDirection: 'row',
+                          display: 'flex',
+                          padding: '10',
+                          flex: 2,
+                          backgroundColor: '#E1FFFF',
+                          color: 'red'
+                        },
+                        sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+                        dataModel: '1',
+                        category: 'businessName',
+                        legend: 'depName',
+                      }
+                    ],
+                  },
+                  {
+                    layout: 'rowFrame',
+                    label: '容器',
+                    style: {
+                      flexDirection: 'column',
+                      display: 'flex',
+                      padding: '10',
+                      flex: 7,
+                      backgroundColor: '#E1FFFF'
+                    },
+                    children: [
+                      {
+                        layout: 'rowFrame',
+                        label: '容器',
+                        style: {
+                          flexDirection: 'row',
+                          display: 'flex',
+                          padding: '10',
+                          flex: 2,
+                          backgroundColor: '#E1FFFF'
+                        },
+                        children: [
+                          {
+                            layout: 'clDis',
+                            label: '分布柱状图',
+                            type: 'sub',
+                            data: {
+                              category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                              legend: ['男生', '女生'],
+                              value: [233, 233, 200, 180, 199, 233, 210, 180]
+                            },
+                            style: {
+                              flexDirection: 'row',
+                              display: 'flex',
+                              padding: '10',
+                              flex: 2,
+                              backgroundColor: '#E1FFFF',
+                              color: 'red'
+                            },
+                            sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+                            dataModel: '1',
+                            category: 'businessName',
+                            legend: 'depName',
+                          }
+                        ],
+                      },
+                      {
+                        layout: 'rowFrame',
+                        label: '容器',
+                        style: {
+                          flexDirection: 'row',
+                          display: 'flex',
+                          padding: '10',
+                          flex: 2,
+                          backgroundColor: '#E1FFFF'
+                        },
+                        children: [
+                          {
+                            layout: 'clDis',
+                            label: '分布柱状图',
+                            type: 'sub',
+                            data: {
+                              category: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                              legend: ['男生', '女生'],
+                              value: [233, 233, 200, 180, 199, 233, 210, 180]
+                            },
+                            style: {
+                              flexDirection: 'row',
+                              display: 'flex',
+                              padding: '10',
+                              flex: 2,
+                              backgroundColor: '#E1FFFF',
+                              color: 'red'
+                            },
+                            sql: 'select count(1),businessName,depName from transaction group by businessName,depName',
+                            dataModel: '1',
+                            category: 'businessName',
+                            legend: 'depName',
+                          }
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ]
+          },
         ],
         drawingList: [],
         activeData: {
@@ -358,10 +883,15 @@
           ]
         },
         drawerVisible: false,
-        previewVisible: false
+        previewVisible: false,
       }
     },
     mounted() {
+      loadBeautifier(btf => {
+        beautifier = btf
+      })
+      let datas = JSON.parse(JSON.stringify(this.templateComponents));
+      this.addComponent(datas.find((item, index) => item.tempId === this.$route.params.id ) || [])
     },
     methods: {
       onEnd(obj) {
@@ -374,6 +904,7 @@
       cloneComponent(origin) {
         const clone = deepClone(origin);
         const config = clone;
+        console.log(config)
         config.span = this.formConf.span ;// 生成代码时，会根据span做精简判断
         this.createIdAndKey(clone); // 生成id 和 key
         clone.placeholder !== undefined && (clone.placeholder += config.label)
@@ -401,6 +932,7 @@
         return item
       },
       addComponent(item) {
+        if (item.length < 1) return false;
         const clone = this.cloneComponent(item)
         this.fetchData(clone)
         this.drawingList.push(clone)
@@ -454,8 +986,38 @@
           layouts: deepClone(this.drawingList),
           conf: this.formConf
         }
-        console.log(this.formData);
-        this.previewVisible = true;
+        this.$store.commit('setPageData', this.formData);
+        // this.$router.push('/preview');
+        sessionStorage.setItem("pageData", JSON.stringify(this.formData));
+        const routeData = this.$router.resolve({
+          name: "preview"
+        });
+        window.open(routeData.href, "_blank");
+        // this.previewVisible = true;
+      },
+      /**
+       * 导出
+       */
+      download(data) {
+        const func = this['execDownload']
+        this.generateConf = {
+          fileName: 'cs',
+          type: 'file'
+        }
+        func && func(data)
+      },
+      execDownload(data) {
+        const codeStr = this.generateCode();
+        const blob = new Blob([codeStr], { type: 'text/plain;charset=utf-8' });
+        saveAs(blob, data.fileName);
+      },
+      generateCode() {
+        const { type } = this.generateConf;
+        this.AssembleFormData();
+        // const script = vueScript(makeUpJs(this.formData, type))
+        const html = vueTemplate(makeUpHtml(this.formData, type))
+        // const css = cssStyle(makeUpCss(this.formData))
+        return beautifier.html(html, beautifierConf.html)
       },
       run() {
         const func = this[`exec${titleCase('run')}`];
@@ -468,8 +1030,8 @@
       },
       AssembleFormData() {
         this.formData = {
-          fields: deepClone(this.drawingList),
-          ...this.formConf
+          layouts: deepClone(this.drawingList),
+          conf: this.formConf
         }
       },
     }
@@ -485,6 +1047,14 @@
     .left {
       flex: 1;
       height: 100%;
+      .type-title {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        color: #333333;
+        font-size: 16px;
+      }
       .components-draggable{
         padding-bottom: 20px;
         display: flex;

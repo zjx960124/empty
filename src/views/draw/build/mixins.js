@@ -8,7 +8,6 @@ const echartMixin = {
   },
   methods: {
     renderEChart: function() {
-      console.log(this.drawingList);
       // let layouts = this.options.layouts;
       let layouts = this.drawingList || this.options.layouts;
       function treeToArray(tree) {
@@ -83,31 +82,17 @@ const echartMixin = {
           ],
         }
       ]*/
-      console.log(treeToArray(layouts))
+      // console.log(treeToArray(layouts))
       this.$nextTick(() => {
         treeToArray(layouts).map((items, indexs) => {
           if (items.componentName.indexOf('echart') !== -1) {
             setTimeout(() => {
-              console.log(document.getElementById(items.componentName))
+              // console.log(document.getElementById(items.componentName))
               console.log(this.$refs);
+              console.log(document.getElementById(items.componentName));
               // this[items.componentName] = echarts.init(document.getElementById(items.componentName));
               this[items.componentName] = echarts.init(this.$refs[items.componentName]);
               let option = {
-                xAxis: {
-                  type: 'category',
-                  data: items.data.category
-                },
-                yAxis: {
-                  type: 'value'
-                },
-                series: [
-                  {
-                    data: items.data.value,
-                    type: items.type
-                  }
-                ]
-              };
-              option = {
                 backgroundColor:'#031d33',
                 tooltip: {
                   show: true
@@ -136,7 +121,7 @@ const echartMixin = {
                 ]
               }
               this[items.componentName].setOption(option);
-            }, 500)
+            }, 1)
           }
         });
       })

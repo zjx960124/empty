@@ -31,7 +31,7 @@ module.exports = {
             errors: true
         },
         proxy: {
-            '/rest': {
+            '/rest1': {
                 target: process.env.VUE_APP_BASE_API,
                 changeOrigin: true, // 是否跨域
                 pathRewrite: {

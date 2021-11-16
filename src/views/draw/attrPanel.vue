@@ -87,7 +87,6 @@
     },
     watch: {
       activeData(old) {
-        console.log(old)
         if (old.componentName.indexOf('echart') !== -1) this.currentTab = '3';
       }
     },

@@ -4,6 +4,7 @@ import 'normalize.css/normalize.css'
 
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
+import ClChart from '@/cChart/index';
 import VueContextMenu from 'vue-contextmenu'
 import vuescroll from 'vuescroll'
 import VueClipboard from 'vue-clipboard2'
@@ -31,6 +32,7 @@ import pinyin from 'js-pinyin'
 import FormBuild from '@/views/draw/build/index';
 import formCreate from '@form-create/element-ui'
 import FcDesigner from '@form-create/designer'
+import http from '@/utils/http'
 
 
 
@@ -53,6 +55,7 @@ Vue.prototype.isEmpty = isEmpty
 Vue.prototype.filterParams = filterParams
 Vue.prototype.processingImgUrl = processingImgUrl
 Vue.prototype.fontSize = fontSize;
+Vue.prototype.http = http;
 VueClipboard.config.autoSetContainer = true
 
 Vue.filter('locale', function (val) {
@@ -76,6 +79,7 @@ Vue.prototype.fitChartSize = fitChartSize;
 Vue.prototype.fitChartHeight = fitChartHeight;
 
 Vue.use(ElementUI)
+Vue.use(ClChart)
 Vue.use(VueContextMenu)
 Vue.use(vuescroll)
 Vue.use(VueClipboard)

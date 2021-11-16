@@ -1,7 +1,6 @@
 // form-build.js
 import componentObj from './build';
 import { version } from '../../../../package';
-import echarts from 'echarts';
 import echartMixin from './mixins';
 
 const formBuild = {
@@ -35,6 +34,7 @@ const formBuild = {
       attrs: {class: 'flex-view'},
       style: {
         display: 'flex',
+        flex: 1,
         flexDirection: conf.flexDirection
       }
       }, [childComp]);

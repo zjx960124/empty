@@ -16,15 +16,15 @@ export const constantRoutes = [
   },
   {
     path: '/',
-    redirect: '/home/index'
+    redirect: '/home/projectManagement'
   },
   {
     path: '/home',
     component: Menu,
     children: [
       {
-        path: 'index',
-        name: 'index',
+        path: 'projectManagement',
+        name: 'projectManagement',
         component: () => import('@/views/projectManagement/index'),
         meta: {
           title: '项目管理',
@@ -50,11 +50,47 @@ export const constantRoutes = [
         }
       },
       {
-        path: 'editPage',
+        path: 'editPage/:id',
         name: 'editPage',
-        component: () => import('@/views/draw/index')
+        component: () => import('@/views/draw/index'),
+        meta: {
+          title: '编辑器',
+          icon: ''
+        }
+      },
+      {
+        path: 'tempManagement',
+        name: 'tempManagement',
+        component: () => import('@/views/tempManagement/index'),
+        meta: {
+          title: '模板管理',
+          icon: ''
+        }
+      },
+      {
+        path: 'componentGallery',
+        name: 'componentGallery',
+        component: () => import('@/views/componentGallery/index'),
+        meta: {
+          title: '组件库',
+          icon: ''
+        }
+      },
+      {
+        path: 'componentDeploy',
+        name: 'componentDeploy',
+        component: () => import('@/views/componentGallery/deploy/index'),
+        meta: {
+          title: '组件编辑',
+          icon: ''
+        }
       },
     ]
+  },
+  {
+    path: '/preview',
+    name: 'preview',
+    component: () => import('@/views/draw/preview')
   },
 ];
 

@@ -310,6 +310,8 @@ const componentObj = {
       ref: obj.componentName,
     }, children)
   },
+  'form': function generateFormComponent () {
+  },
   'echart': function generateChartComponent(h, obj, conf, gutter, bool, vm) {
     return h('div', {
       style: {
@@ -320,6 +322,37 @@ const componentObj = {
         id: obj.componentName
       },
       ref: obj.componentName
+    })
+  },
+  'clSub': function generateSubComponent(h, obj, conf, gutter, bool, vm) {
+    return h('cl-sub', {
+      props: {
+        refName: 'build' + obj.componentName,
+        styleOption: obj.style,
+        chartData: obj.data
+      }
+    })
+  },
+  'clDis': function generateSubComponent(h, obj, conf, gutter, bool, vm) {
+    return h('cl-dis', {
+      props: {
+        refName: 'build' + obj.componentName,
+        styleOption: obj.style,
+        chartData: obj.data,
+        sql: obj.sql,
+        dataModel: obj.dataModel,
+        category: obj.category,
+        legend: obj.legend
+      }
+    })
+  },
+  'clPie': function generateSubComponent(h, obj, conf, gutter, bool, vm) {
+    return h('cl-pie', {
+      props: {
+        refName: 'build' + obj.componentName,
+        styleOption: obj.style,
+        chartData: obj.data
+      }
     })
   }
 };

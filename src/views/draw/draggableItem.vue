@@ -5,6 +5,7 @@
 
   const components = {
     itemBtns(h, currentItem, index, list) {
+      console.log(currentItem, index, list);
       const { copyItem, deleteItem } = this.$listeners;
       return [
         <span class="drawing-item-copy" title="复制" onClick={event => {
@@ -40,72 +41,12 @@
         },
         on: {
           click: () => {
-            deleteItem(currentItem, list);
+            deleteItem(index, list);
             event.stopPropagation();
           }
         }
       }, [h('i', {class: 'el-icon-delete'}, [])]);
       return [copyBtn, deleteBtn];
-    }
-  }
-  const layouts = {
-    colFormItem(h, currentItem, index, list) {
-      const { activeItem } = this.$listeners
-      const config = currentItem
-      const child = renderChildren.apply(this, arguments)
-      let className = this.activeId === config.formId ? 'drawing-item active-from-item' : 'drawing-item'
-      if (this.formConf.unFocusedComponentBorder) className += ' unfocus-bordered'
-      let labelWidth = config.labelWidth ? `${config.labelWidth}px` : null
-      if (config.showLabel === false) labelWidth = '0'
-      return (
-        <el-col span={config.span} class={className}
-      nativeOnClick={event => { activeItem(currentItem); event.stopPropagation() }}>
-    <el-form-item label-width={labelWidth}
-      label={config.showLabel ? config.label : ''} required={config.required}>
-        <render key={config.renderKey} conf={currentItem} onInput={ event => {
-        this.$set(config, 'defaultValue', event)
-      }}>
-      {child}
-    </render>
-      </el-form-item>
-      {components.itemBtns.apply(this, arguments)}
-    </el-col>
-    )
-    },
-    rowFormItem(h, currentItem, index, list) {
-      const { activeItem } = this.$listeners
-      const config = currentItem
-      const className = this.activeId === config.formId
-        ? 'drawing-row-item active-from-item'
-        : 'drawing-row-item'
-      let child = renderChildren.apply(this, arguments)
-      if (currentItem.type === 'flex') {
-        child = <el-row type={currentItem.type} justify={currentItem.justify} align={currentItem.align}>
-          {child}
-          </el-row>
-      }
-      return (
-        <el-col span={config.span}>
-        <el-row gutter={config.gutter} class={className}
-      nativeOnClick={event => { activeItem(currentItem); event.stopPropagation() }}>
-    <span class="component-name">{config.componentName}</span>
-        <draggable list={config.children || []} animation={340}
-      group="componentsGroup" class="drag-wrapper">
-        {child}
-        </draggable>
-      {components.itemBtns.apply(this, arguments)}
-    </el-row>
-      </el-col>
-    )
-    },
-    raw(h, currentItem, index, list) {
-      const config = currentItem
-      const child = renderChildren.apply(this, arguments)
-      return <render key={config.renderKey} conf={currentItem} onInput={ event => {
-        this.$set(config, 'defaultValue', event)
-      }}>
-      {child}
-    </render>
     }
   }
   const layoutt = {
@@ -179,6 +120,100 @@
       {components.itemBtns.apply(this, arguments)}
     </div>
     )*/
+    },
+    elForm(h, currentItem, index, list) {
+      const { activeItem } = this.$listeners;
+      const config = currentItem;
+      const className = this.activeId === config.formId
+        ? 'drawing-row-item active-from-item'
+        : 'drawing-row-item';
+      let child = renderChildren.apply(this, arguments);
+      let name = h('span', { class: 'component-name' }, config.componentName);
+      let draggable = h('draggable', {
+        props: {
+          animation: 340,
+          group: 'componentsGroup',
+          list: config.children || []
+        },
+        attrs: {
+          animation: 340,
+          group: 'componentsGroup',
+          list: config.children || []
+        },
+        style: {
+          width: '100%',
+          ...config.style
+        },
+        class: 'drag-wrapper'
+      }, [child]);
+      let form = h('el-form', {
+        attrs: {
+        },
+        style: {
+          width: '100%',
+          height: '100%',
+          ...config.style
+        },
+      }, [draggable]);
+      return h('div', {
+        on: {
+          click: () => {
+            activeItem(currentItem);
+            event.stopPropagation();
+          }
+        },
+        style: {
+          ...config.style,
+          padding: config.style.padding + 'px'
+        },
+        class: className,
+      }, [name, form, ...components.vnBtns.apply(this, arguments)]);
+    },
+    elInput(h, currentItem, index, list) {
+      const { activeItem } = this.$listeners;
+      const config = currentItem;
+      const className = this.activeId === config.formId
+        ? 'drawing-row-item active-from-item'
+        : 'drawing-row-item';
+      let child = renderChildren.apply(this, arguments);
+      let vNode = h('el-input', {
+        props: {
+          ...config.props,
+        },
+        attrs: {
+          value: config.props.value
+        },
+        style: config.style,
+        slot: config.slot
+      }, child);
+      return h('el-form-item', {
+        attrs: {
+          label: '输入框'
+        }
+      }, [vNode, ...components.vnBtns.apply(this, arguments)]);
+    },
+    elRadio(h, currentItem, index, list) {
+      const { activeItem } = this.$listeners;
+      const config = currentItem;
+      const className = this.activeId === config.formId
+        ? 'drawing-row-item active-from-item'
+        : 'drawing-row-item';
+      let child = renderChildren.apply(this, arguments);
+      let vNode = h('el-radio', {
+        props: {
+          ...config.props,
+        },
+        attrs: {
+          value: config.props.value
+        },
+        style: config.style,
+        slot: config.slot
+      }, child);
+      return h('el-form-item', {
+        attrs: {
+          label: '输入框'
+        }
+      }, [vNode, ...components.vnBtns.apply(this, arguments)]);
     },
     echart(h, currentItem, index, list) {
       const config = currentItem;
@@ -281,6 +316,45 @@
           index: (index + 1).toString()
         }
       }, [i, span])
+    },
+    clSub(h, currentItem, index, list) {
+      const config = currentItem;
+      const { activeItem } = this.$listeners;
+      return h('cl-sub', {
+        props: {
+          refName: config.componentName,
+          styleOption: config.style,
+          chartData: config.data
+        }
+      })
+    },
+    clDis(h, currentItem, index, list) {
+      const config = currentItem;
+      const { activeItem } = this.$listeners;
+      const renderKey = config.formId + new Date();
+      return h('cl-dis', {
+        props: {
+          refName: config.componentName,
+          styleOption: config.style,
+          chartData: config.data,
+          sql: config.sql,
+          dataModel: config.dataModel,
+          category: config.category,
+          legend: config.legend
+        }
+      })
+    },
+    clPie(h, currentItem, index, list) {
+      const config = currentItem;
+      const { activeItem } = this.$listeners;
+      const renderKey = config.formId + new Date();
+      return h('cl-pie', {
+        props: {
+          refName: config.componentName,
+          styleOption: config.style,
+          chartData: config.data
+        }
+      })
     }
   };
   function renderChildren(h, currentItem, index, list) {
@@ -319,6 +393,7 @@
       'formConf'
     ],
     render(h) {
+      console.log(this.drawingList)
       const layout = layoutt[this.currentItem.layout]
       if (layout) {
         return layout.call(this, h, this.currentItem, this.index, this.drawingList)
